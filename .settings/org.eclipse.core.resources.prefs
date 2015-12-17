@@ -1,0 +1,14 @@
+eclipse.preferences.version=1
+encoding//WebContent/WEB-INF/views/client/index/apart_index_body_container.jsp=UTF-8
+encoding//WebContent/WEB-INF/views/client/index/apart_index_body_main_slider.jsp=UTF-8
+encoding//WebContent/WEB-INF/views/client/joinForm.jsp=UTF-8
+encoding//WebContent/WEB-INF/views/client/loginForm.jsp=UTF-8
+encoding//WebContent/WEB-INF/views/client/retrievePointForm.jsp=UTF-8
+encoding//WebContent/WEB-INF/views/client/template/index/apart_index_body_container.jsp=UTF-8
+encoding//WebContent/WEB-INF/views/client/template/index/apart_index_body_main_slider.jsp=UTF-8
+encoding//WebContent/resources/css/bootstrap.min.css=UTF-8
+encoding//WebContent/resources/fonts/fontawesome-webfont.eot=UTF-8
+encoding//WebContent/resources/fonts/fontawesome-webfont.woff=UTF-8
+encoding//src/com/learning/eng/client/controller/FreeBoardController.java=UTF-8
+encoding//src/com/learning/eng/client/service/FreeBoardService.java=UTF-8
+encoding/<project>=UTF-8

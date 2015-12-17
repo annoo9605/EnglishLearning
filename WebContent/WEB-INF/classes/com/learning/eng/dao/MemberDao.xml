@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learning.eng.dao.MemberDao">
+	<insert id="insertMember" 
+		parameterType="Map">
+		INSERT INTO EN_MEMBER
+		            ( ID
+		            , PW
+		            <if test="surName!=null">
+		            , SUR_NAME
+		            </if>
+		            <if test="givenName!=null">
+		            , GIVEN_NAME
+		            </if>
+		            <if test="email!=null">
+		            , EMAIL
+		            </if>
+		            <if test="addrRough!=null">
+		            , ADDRESS_ROUGH
+		            </if>
+		            <if test="addrDetail!=null">
+		            , ADDRESS_DETAIL
+		            </if>
+		            <if test="zipCode!=null">
+		            , ZIP_CODE
+		            </if>
+		            <if test="phoneNum!=null">
+		            , PHONE_NUMBER
+		            </if>
+		            , CRE_DATE
+		            , IS_DELETE
+		            )
+		    VALUES (
+		       		#{id}
+		       	  , #{pw}
+		       	  <if test="surName!=null">
+		       	  , #{surName}
+		       	  </if>
+		       	  <if test="givenName!=null">
+		       	  , #{givenName}
+		       	  </if>
+		       	  <if test="email!=null">
+		       	  , #{email}
+		       	  </if>
+	              <if test="addrRough!=null">
+		       	  , #{addrRough}
+		       	  </if>
+                  <if test="addrDetail!=null">
+		       	  , #{addrDetail}
+		       	  </if>
+		       	  <if test="zipCode!=null">
+		       	  , #{zipCode}
+		       	  </if>
+		       	  <if test="phoneNum!=null">
+		       	  , #{phoneNum}
+		       	  </if>
+		          , SYSDATE()
+		          , 'N'
+		       )
+	</insert>
+	
+	<select id="findFbId"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_MEMBER
+			<where>
+				<if test="id!=null">
+					AND ID = #{id}
+				</if> 
+				AND IS_DELETE = 'N'
+			</where>
+	</select>
+	
+	<select id="retrieveMember"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT ID, PW,  COOKIE_VAL
+			FROM EN_MEMBER
+		<where>
+			<if test='id!=null and id!=""'>
+				AND ID = #{id}
+			</if>
+			<if test='cookie!=null and cookie!=""'>
+				AND COOKIE_VAL = #{cookie}
+			</if>
+			AND IS_DELETE='N'
+		</where>
+	</select>
+	
+	<select id="findCode"
+		parameterType="Map"
+		resultType="Map">
+	
+		SELECT ID, EMAIL, PW
+		 FROM EN_MEMBER
+		  WHERE 1 = 1
+		  <if test="surName!=null">
+		  		AND SUR_NAME = #{surName}
+		  </if>
+		  <if test="givenName!=null">
+		  		AND GIVEN_NAME = #{givenName}
+		  </if>
+		  <if test="email!=null">
+		  		AND EMAIL = #{email}
+		  </if>
+		
+	</select>
+	
+	<insert id="insertConfirmCode"
+		parameterType="Map">
+	
+		INSERT INTO FIND_MEM_INFO
+			( CODE_NO 
+			, VAL_CODE
+			, FIND_DATE 
+			, EMAIL)
+		  VALUES
+		  	( 301
+		  	, #{val_code}
+		  	, SYSDATE( )
+		  	, #{email} )
+	</insert>
+	
+	<insert id="updateCookieCode"
+		parameterType="Map">
+	
+		UPDATE EN_MEMBER
+		SET COOKIE_VAL = #{cookie_val}
+		WHERE 1 =1 
+		<if test='id!=null and id!=""'>
+			AND ID = #{id}
+		</if>
+		
+	</insert>
+	
+	<select id="selectConfirmCode"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT VAL_CODE
+		 FROM (SELECT ROWNUM RN, T1.* 
+		 		FROM ( SELECT * 
+		 				FROM FIND_MEM_INFO
+		 				ORDER BY FIND_DATE DESC) T1) T2
+		 	WHERE 1 = 1
+		 	<if test="email!=null">
+		  		AND EMAIL = #{email}
+		  	</if>
+		  		AND T2.RN = 1
+		
+	</select>
+	
+	<select id="retrieveMemberAllInfo"
+			parameterType="Map"
+			resultType="Map">
+		SELECT 	
+					ID
+					, PW
+					, SUR_NAME
+					, GIVEN_NAME
+					, EMAIL 
+					, ADDRESS_ROUGH
+					, ADDRESS_DETAIL
+					, ZIP_CODE
+					, PHONE_NUMBER
+		 FROM EN_MEMBER
+		WHERE 1=1	
+		<if test='id!=null and id!=""'>
+			AND ID = #{id}
+		</if>
+	</select>
+	
+	<update id="updateMemberInfo"
+			parameterType="Map">
+		UPDATE 	EN_MEMBER
+		   SET 
+<!--            <choose> -->
+<!--            	<when test="pw == null"> -->
+<!-- 					EMAIL           = #{email} -->
+<!--            	</when> -->
+<!--            	<otherwise> -->
+<!--           			PW              	= #{pw} -->
+<!-- 					,EMAIL           = #{email} -->
+<!--            	</otherwise> -->
+<!--            </choose> -->
+					EMAIL           = #{email}
+		   <if test="pw != null and !pw.equals('')">
+          			, PW              = #{pw}
+		   </if>
+					, ADDRESS_ROUGH   = #{addrRough}
+					, ADDRESS_DETAIL  = #{addrDetail}
+					, ZIP_CODE        = #{zipCode}
+					, PHONE_NUMBER    = #{phoneNum}
+			<where>
+				<if test='id!=null and id!=""'>
+		  		  AND ID = #{id}
+				</if>
+			</where>
+	</update>
+	
+  	
+	
+</mapper>
+
+
+
+
+
+
+
+

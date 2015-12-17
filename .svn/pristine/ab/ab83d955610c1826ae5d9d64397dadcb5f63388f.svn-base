@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+ 						http://www.springframework.org/schema/beans/spring-beans.xsd
+						http://www.springframework.org/schema/context 
+						http://www.springframework.org/schema/context/spring-context.xsd"> 
+
+<!-- @ResponseBody 를 사용하여 View를 실행할때(MessageConverter를 반드시 설정해줘야 함, 대신 view등록을 따로 해줄 필요가 없음 )
+	SpringMvc dispatcherServlet 참고 -->
+<!-- 	<annotation-driven /> -->
+						
+	<context:component-scan base-package="com.learning.eng"
+		use-default-filters="false">
+		<context:include-filter type="annotation" expression="org.springframework.stereotype.Repository"	/>
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"	/> -->
+<!-- 		<context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"	/> -->
+			
+	</context:component-scan>						
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"/>
+		<property name="suffix" value=".jsp" />
+		<property name="order" value="2" />
+	</bean>
+	
+<!-- 	Multipart Resolver -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	</bean>
+	
+<!-- 	Download View -->
+	<bean id="DOWNLOAD"
+		class="com.learning.eng.view.DownloadView" />
+	
+<!-- 	Data Source -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName">
+<!-- 			<value>oracle.jdbc.driver.OracleDriver</value> -->
+			<value>core.log.jdbc.driver.MysqlDriver</value>
+		</property>
+		<property name="url" value="jdbc:mysql://localhost:3306/annoo" />
+		<property name="username" value="annoo" />
+		<property name="password" value="An6739605" />
+		<property name="maxActive" value="100" />
+	</bean>
+	
+<!-- 	Bean Name View Resolver -->
+	<bean id="beanNameViewResolver"
+		class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="1" />
+	</bean>
+	
+<!-- 	JSON View -->
+	<bean id="JSON"
+		class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" />
+		
+<!-- 	MyBatis -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mapperConfig.xml" />
+	</bean>
+	
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	
+	<bean id="commonUtil" class="com.learning.eng.common.Util">
+	</bean>
+	
+<!-- 	Error Message 최종테스트까지 주석을 풀지 않는다 -->
+<!-- 	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver"> -->
+<!-- 		<property name="defaultErrorView" value="error"/> -->
+<!-- 		<property name="exceptionMappings"> -->
+<!-- 			<props> -->
+<!-- 				<prop key="com.learning.eng.exception.AuthenticationException"> -->
+<!-- 					error -->
+<!-- 				</prop> -->
+<!-- 			</props> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
+
+	<!-- 메일 설정 (벨로시티 템플릿 설정) -->
+	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<property name="velocityProperties">
+			<props>
+				<prop key="resource.loader">class</prop>
+				<prop key="class.resource.loader.class">org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader</prop>
+				<prop key="input.encoding">UTF-8</prop>              
+  				<prop key="output.encoding">UTF-8</prop>
+			</props>
+		</property>
+	</bean>
+	
+</beans>	

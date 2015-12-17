@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+  <configuration>
+  	
+  	<settings>
+  		<setting name="mapUnderscoreToCamelCase" value="true"/>
+  	</settings>
+  	
+  	<typeAliases>
+  		<typeAlias alias="String" type="java.lang.String"/>
+  		<typeAlias alias="Map" type="java.util.Map"/>
+  		<typeAlias alias="Integer" type="java.lang.Integer"/>
+  	</typeAliases>
+  	<!-- 역시 설정을 해주어야 한다. -->
+  	<mappers>
+  		<mapper resource="com/learning/eng/dao/MemberDao.xml"/>
+  		<mapper resource="com/learning/eng/dao/ClientBoardDao.xml"/>
+  		<mapper resource="com/learning/eng/dao/FreeBoardDao.xml" />
+  		<mapper resource="com/learning/eng/dao/StudyBoardDao.xml" />
+  	</mappers>
+
+  
+  </configuration>

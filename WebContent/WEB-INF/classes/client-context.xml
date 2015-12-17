@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.springframework.org/schema/context
+                        http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<bean id="viewResolver"
+		class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/views/"/>
+		<property name="suffix" value=".jsp" />
+		<property name="order" value="2" />
+	</bean>
+	
+<!-- 	Multipart Resolver -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	</bean>
+	
+<!-- 	Download View -->
+	<bean id="DOWNLOAD"
+		class="com.learning.eng.view.DownloadView" />
+	
+<!-- 	Data Source -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+		<property name="driverClassName">
+<!-- 			<value>oracle.jdbc.driver.OracleDriver</value> -->
+			<value>core.log.jdbc.driver.MysqlDriver</value>
+		</property>
+<!-- 		MySQL 외부 IP 접근설정 ip 주소 찾아서 바꾸기  -->
+		<property name="url" value="jdbc:mysql://annoo.cafe24.com:3306/annoo" />
+<!-- 			MySQL 외부 IP 접근 설정 사용 하지 않을때 -->
+<!-- 		<property name="url" value="jdbc:mysql://localhost:3306/annoo" /> -->
+
+<!-- 		<property name="username" value="root" /> -->
+<!-- 		<property name="password" value="apmsetup" /> -->
+		<property name="username" value="annoo" />
+		<property name="password" value="An6739605" />
+		<property name="maxActive" value="100" />
+		<property name="timeBetweenEvictionRunsMillis" value="600000" />
+		<property name="testWhileIdle" value="true" />
+		<property name="validationQuery" value="SELECT 1" />
+	</bean>
+	
+<!-- 	Bean Name View Resolver -->
+	<bean id="beanNameViewResolver"
+		class="org.springframework.web.servlet.view.BeanNameViewResolver">
+		<property name="order" value="1" />
+	</bean>
+	
+<!-- 	JSON View -->
+	<bean id="JSON"
+		class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" />
+		
+<!-- 	MyBatis -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mapperConfig.xml" />
+	</bean>
+	
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	
+	<bean id="commonUtil" class="com.learning.eng.common.Util">
+	</bean>
+	
+<!-- 	Error Message 최종테스트까지 주석을 풀지 않는다 -->
+<!-- 	<bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver"> -->
+<!-- 		<property name="defaultErrorView" value="error"/> -->
+<!-- 		<property name="exceptionMappings"> -->
+<!-- 			<props> -->
+<!-- 				<prop key="com.learning.eng.exception.AuthenticationException"> -->
+<!-- 					error -->
+<!-- 				</prop> -->
+<!-- 			</props> -->
+<!-- 		</property> -->
+<!-- 	</bean> -->
+
+	<!-- 메일 설정 (벨로시티 템플릿 설정) -->
+	<bean id="velocityEngine" class="org.springframework.ui.velocity.VelocityEngineFactoryBean">
+		<property name="velocityProperties">
+			<props>
+				<prop key="resource.loader">class</prop>
+				<prop key="class.resource.loader.class">org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader</prop>
+				<prop key="input.encoding">UTF-8</prop>              
+  				<prop key="output.encoding">UTF-8</prop>
+			</props>
+		</property>
+	</bean>
+
+	<context:component-scan 
+		base-package="com.learning.eng.client" />
+
+
+	<bean id="memberDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="com.learning.eng.dao.MemberDao" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate" />
+	</bean>
+
+	<bean id="clientBoardDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="com.learning.eng.dao.ClientBoardDao" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate" />
+	</bean>
+	<!-- Dao 설정 파일을 설정 할 때 클래스 방식이 아닌 인터페이스 방식으로 사용 할 때 설정을 해야만 한다. -->
+	<bean id="freeBoardDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="com.learning.eng.dao.FreeBoardDao" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate" />
+	</bean>
+	
+	<bean id="studyBoardDao" class="org.mybatis.spring.mapper.MapperFactoryBean">
+		<property name="mapperInterface" value="com.learning.eng.dao.StudyBoardDao" />
+		<property name="sqlSessionFactory" ref="sqlSessionFactory" />
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate" />
+	</bean>
+	
+</beans>
+
+
+
+
+
+
+
+
+
+
+

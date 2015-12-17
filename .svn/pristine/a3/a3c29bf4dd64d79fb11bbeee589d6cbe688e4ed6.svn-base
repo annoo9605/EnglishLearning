@@ -1,0 +1,558 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.learning.eng.dao.ClientBoardDao">
+
+	<insert id="insertPointCount"
+		parameterType="Map">
+		INSERT INTO EN_POINT(
+								ACTIVITY
+						   <if test='id!=null and !id.equals("")'>
+							,	ID
+							</if>
+							,	ACTIVITY_DATE
+							<if test='point !=null and !point.equals("")'>
+							,	POINT
+							</if>
+							,	CODE_NO
+							,	SOURCE_SEQ_NO
+							)
+				VALUES		(
+<!-- 							id 없이 퀴즈 풀이 가능하기 위해서 null check -->
+							#{activity} 
+							<if test='id!=null and !id.equals("")'>
+							,	#{id}
+							</if>
+							,	SYSDATE()
+							<if test='point !=null and !point.equals("")'>
+							,	#{point}
+							</if>
+							,	#{codeNo}
+							,	#{sourceSeqNo}
+							)
+							
+	</insert>
+
+	<select id="getPointCount"
+		resultType="Integer">
+		SELECT COUNT(*) 
+		  FROM EN_POINT
+		<where>
+			<if test="id != null">
+				ID = #{id}
+			</if>
+		</where> 
+	</select>
+	
+	<select id="getBoardArticleCount"
+		resultType="Integer">
+		SELECT COUNT(*) 
+		  FROM EN_BOARD
+		<where>
+			AND IS_DELETE='N'
+			AND CODE_NO = '102' OR CODE_NO = '103' 
+		</where> 
+	</select>
+	
+
+	<select id="retrieveMemberPoint"
+			parameterType="Map"
+			resultType="Map">
+		SELECT 
+				  RM
+				, ID
+<!-- 				, POINT_SAVE_DATE -->
+				, ACTIVITY_DATE
+				, POINT
+				, CODE_NO  
+		  FROM 
+		    (SELECT ROWNUM RM, EP.* 
+		          FROM EN_POINT EP)
+		   
+		<where>
+			<if test="startRow !=null and endRow != null">
+				RM BETWEEN #{startRow} AND #{endRow}
+			</if>
+		</where>	
+	</select>
+
+	<insert id="insertExpression"
+			parameterType="Map">
+		INSERT INTO EN_BOARD
+					(
+							SEQ_NO
+						,	CODE_NO
+						,	ID
+						,	BOARD_TITLE
+					<if test="isQuiz != null and isQuiz == 'false'">
+<!-- 					<if test="isQuiz != null and isQuiz == 'true'"> -->
+						,	BOARD_CONTENT
+					</if>
+						,	BOARD_GROUP
+						,	BOARD_DEPTH
+						,	BOARD_HIT
+						,	BOARD_CRE_DATE
+						,	BOARD_MOD_DATE
+						<if test='isAtch !=null and isAtch !=""'>
+						,	IS_ATCH_FILE
+						</if>
+						,	IS_DELETE
+					)
+				values  
+						(	null
+						,	#{codeNo}
+						,	#{id}
+						,	#{title}
+					<if test="isQuiz != null and isQuiz == 'false'">
+<!-- 					<if test="isQuiz != null and isQuiz == 'true'"> -->
+						,	#{content}
+					</if>
+						,	0
+						,	0
+						,	0
+						,	SYSDATE()
+						,	SYSDATE()
+						<if test='isAtch !=null and isAtch !=""'>
+						,	#{isAtch}
+						</if>
+						,	'N')
+	</insert>
+	
+	<select id="retrieveRecentSeqNo"
+			parameterType="Map"
+			resultType="Integer">
+			SELECT MAX(SEQ_NO) 
+			  FROM EN_BOARD
+			<where>
+				<if test="id != null">
+					AND ID = #{id}
+				</if>
+			</where>
+	</select>
+	
+	<insert id ="insertQuizAns"
+			parameterType="Map">
+		INSERT INTO EN_QUIZ_ANS	(
+									SEQ_NO
+								,	Q_ANS_NUM
+								,	Q_ANS
+								,	Q_ANS_CODE
+								)
+						VALUES (
+								#{seqNo}
+								, #{ansNum}
+								, #{content}
+								, #{ansCode}
+						)
+	</insert>
+	
+	
+	<select id="retrieveExpression"
+			parameterType="Map"
+			resultType="Map">
+		SELECT *
+		  FROM EN_BOARD
+		 WHERE IS_DELETE = 'N'
+		   AND CODE_NO = '102' OR CODE_NO = '103'
+         ORDER BY SEQ_NO DESC
+         <if test="startRow != null">
+         LIMIT #{startRow}, 10
+         </if>
+			
+<!-- 		SELECT * -->
+<!--   		  FROM (SELECT ROWNUM RM, EB1.* -->
+<!--                   FROM (SELECT *  -->
+<!--                           FROM EN_BOARD -->
+<!--                           WHERE IS_DELETE = 'N' -->
+<!--                           AND CODE_NO = '102' OR CODE_NO = '103' -->
+<!--                 		 ORDER BY SEQ_NO DESC ) EB1 ) EB2 -->
+<!-- 		<where> -->
+<!--   		  <if test="startRow !=null and endRow != null"> -->
+<!-- 				EB2.RM BETWEEN #{startRow} AND #{endRow} -->
+<!-- 		  </if> -->
+<!-- 		</where> -->
+			
+			
+	</select>
+
+	<select id="retrieveAnswer"
+			parameterType="Map"
+			resultType="Map">
+			SELECT EQA.*
+			 FROM  EN_QUIZ_ANS EQA
+			 <where>
+			 	<if test='qSeqNo != null and qSeqNo !=""'>
+			 	SEQ_NO = #{qSeqNo}
+			 	</if>
+			 </where>
+			 ORDER BY EQA.SEQ_NO DESC 
+	</select>
+	
+	<select id="getLastBoardSeqNo"
+			parameterType="Map"
+			resultType="Map">
+			SELECT IFNULL(MAX(SEQ_NO),0) LAST_SEQ_NO
+			  FROM EN_BOARD
+			
+	</select>
+	
+	<insert id="insertAtachFile"
+			parameterType="Map"	>
+			INSERT INTO EN_ATACH_FILE
+						(
+							SAVE_FILE_NAME
+						,	DSP_FILE_NAME
+						,	EXTENSION
+						,	FILE_SIZE
+						,	IS_DELETE
+						,	CODE_NO
+						,	SEQ_NO
+						,	FILE_SEQ_NO
+						,	DOWN_COUNT
+						)
+				  VALUES(
+				  			#{saveName}
+				  		,	#{dspName}
+				  		,	#{expName}
+				  		,	#{fileSize}
+				  		,	'N'
+				  		,	#{codeNo}
+				  		,	#{seqNo}
+				  		,	#{fileSeqNo}
+				  		,   0
+				  )
+	</insert>
+
+	<select id="getQuizCount"
+			parameterType="Map"
+			resultType="Map">
+	
+		SELECT *
+		  FROM EN_BOARD
+		  <where>
+		  <if test='codeNo != null and code !="" '>
+		  	CODE_NO = #{codeNo}
+		  </if>
+		  </where>
+	</select>
+	
+	<select id="retrieveQuizData"
+			parameterType="Map"
+			resultType="Map">
+			
+		SELECT QUIZ.* 
+	      FROM  (SELECT BOARD.*, ROWNUM RM 
+	               FROM 
+<!-- 	               추천 비추천수 5이상인  게시물 중에서-->
+	               		(SELECT * FROM EN_BOARD
+	               			WHERE SEQ_NO IN (SELECT SOURCE_SEQ_NO SEQ_NO 
+	               							  FROM EN_LIKE 
+	               							 WHERE BOARD_LIKE-BOARD_DISLIKE <![CDATA[ >= ]]> 2)
+	               			) BOARD
+	          	<where>
+				<choose>
+		          	<when test='codeNo != null and codeNo =="102" or codeNo=="103"'>
+			  			CODE_NO = #{codeNo}
+		          	</when>
+					<otherwise>
+			  			CODE_NO = 102 OR CODE_NO = 103
+					</otherwise>				
+				</choose>
+<!-- 		 		<if test='codeNo != null and code =="" '> -->
+<!-- 		  			CODE_NO = 102 OR CODE_NO = 103 -->
+<!-- 		 		</if> -->
+	          	</where>  
+	           ORDER BY DBMS_RANDOM.RANDOM 
+	          ) QUIZ
+	    <where>
+	    <if test='quizCount != null and quizCount !="" '>
+	    	QUIZ.RM <![CDATA[ <= ]]> #{quizCount}
+	    </if>
+	    </where> 
+	</select>
+	
+	<select id="retrieveAtchFile"
+			parameterType="Map"
+			resultType="Map">
+			SELECT 
+					SAVE_FILE_NAME
+				,	DSP_FILE_NAME
+				,	EXTENSION
+				,	FILE_SIZE
+				,	IS_DELETE
+				,	CODE_NO
+				,	SEQ_NO
+				,	FILE_SEQ_NO
+				,	DOWN_COUNT
+			FROM EN_ATACH_FILE
+			<where>
+			<if test='codeNo != null and codeNo !=""'>
+				AND CODE_NO = #{codeNo}
+			</if>
+			<if test='seqNo != null and seqNo !=""'>
+				AND SEQ_NO = #{seqNo}
+			</if>
+			</where>	
+	</select>
+	
+	<insert id="insertRecommend"
+			parameterType="Map">
+			INSERT INTO EN_LIKE
+						(
+							BOARD_LIKE
+						,	BOARD_DISLIKE
+						,	CODE_NO
+						,	SOURCE_SEQ_NO
+						)
+				VALUES
+						(
+							0
+						,	0
+						,	#{codeNo}
+						,	#{seqNo}
+						)
+	</insert>
+	<update id="updateRecommend"
+			parameterType="Map"
+			>
+<!-- 		<selectKey keyProperty="board_like, board_dislike" -->
+<!-- 		 		resultType="Map" order="BEFORE"> -->
+<!-- 		 		SELECT (MAX(BOARD_LIKE) + 1) board_like, (MAX(BOARD_DISLIKE) + 1) board_dislike FROM EN_LIKE -->
+<!-- 		</selectKey> -->
+			UPDATE	EN_LIKE
+			   SET
+			   <choose>
+				   	<when test='value != null and value=="up"'>
+<!-- 						BOARD_LIKE =  #{board_like} -->
+							BOARD_LIKE = (SELECT MAX(BOARD_LIKE)+1 
+											FROM EN_LIKE
+											<where>
+											<if test='seqNo != null and seqNo !=""'>
+												<if test='codeNo != null and codeNo !=""'>
+														SOURCE_SEQ_NO = #{seqNo}
+													AND CODE_NO = #{codeNo}
+												</if>
+											</if>
+											</where>
+											)
+				   	</when>
+				   	<when test='value != null and value=="down"'>
+<!-- 						BOARD_DISLIKE =  #{board_dislike} -->
+						BOARD_DISLIKE =  (SELECT MAX(BOARD_DISLIKE)+1 
+											FROM EN_LIKE
+											<where>
+											<if test='seqNo != null and seqNo !=""'>
+												<if test='codeNo != null and codeNo !=""'>
+														SOURCE_SEQ_NO = #{seqNo}
+													AND CODE_NO = #{codeNo}
+												</if>
+											</if>
+											</where>
+											)
+				   	</when>
+			   </choose>
+			<where>
+			<if test='seqNo != null and seqNo !=""'>
+				<if test='codeNo != null and codeNo !=""'>
+						SOURCE_SEQ_NO = #{seqNo}
+					AND CODE_NO = #{codeNo}
+				</if>
+			</if>
+			</where>
+	</update>
+	
+	<select id="retrieveRecommendCount"
+			parameterType="Map"
+			resultType="Map">
+		SELECT 		
+					BOARD_LIKE
+				,	BOARD_DISLIKE
+				,	CODE_NO
+				,	SOURCE_SEQ_NO
+				,   BOARD_LIKE - BOARD_DISLIKE TOTAL_LIKE
+		  FROM  EN_LIKE
+		  <where>
+			<if test='codeNo != null and codeNo !=""'>
+				AND CODE_NO = #{codeNo}
+			</if>
+		 	<if test='seqNo != null and seqNo !=""'>
+				AND SOURCE_SEQ_NO = #{seqNo}
+			</if>
+		  </where>
+	</select>
+	
+	<select id="retrievePoint"
+		parameterType="Map"
+		resultType="Map">
+		SELECT ACTIVITY, SUM(POINT) as point
+			FROM EN_POINT
+			WHERE 1 =1
+			<if test="id!=null"> -->
+				AND ID = #{id}
+			</if>
+			<if test="activityDate!=null">
+				AND TRUNCATE( ACTIVITY_DATE, 0 ) = #{activityDate}
+			</if>
+				GROUP BY ACTIVITY
+		
+	</select>
+	
+	<select id="retrieveMyQuiz"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT EB2.*
+			FROM (SELECT ROWNUM RN, EB1.* 
+				  FROM (SELECT EB.*, EP.ACTIVITY, EP.ACTIVITY_DATE
+							FROM EN_BOARD EB, EN_POINT EP
+						   WHERE EB.SEQ_NO = EP.SOURCE_SEQ_NO(+)
+						   ORDER BY SEQ_NO DESC) EB1) EB2
+					WHERE 1 = 1
+					<if test="id!=null"> 
+						and ID = #{id}
+					</if>
+					<if test="activityDate!=null">
+						AND TRUNCATE(EB2.ACTIVITY_DATE, 0) = #{activityDate}
+					</if>
+					<if test="activity!=null">
+						AND EB2.ACTIVITY = #{activity}
+					</if>
+	</select>
+	
+	<select id="retriveArticleStateByActivity"
+		parameterType="Map"
+		resultType="Map">
+		SELECT 	BOARD_TITLE , BOARD_CRE_DATE , SEQ_NO, CODE_NO, ID
+			FROM EN_BOARD
+				<where>
+			SEQ_NO IN  (SELECT SEQ_NO FROM EN_POINT
+	           			WHERE 
+				                ID = #{id}
+				                <if test='seqNo !=null and !seqNo.equals("")'>
+				                AND SOURCE_SEQ_NO = #{sourceSeqNo} 
+				                </if>
+				                <if test='activity !=null and activity.equals("204")'>
+				                AND (ACTIVITY = #{activity} or ACTIVITY = '205')
+				                </if>
+				                <if test='activity !=null and activity.equals("205")'>
+				                AND (ACTIVITY = #{activity} or ACTIVITY = '204')
+				                </if>
+				                ) 
+			</where>	
+	</select>
+	<select id="isSelfRecommend"
+		parameterType="Map"
+		resultType="Map">
+		SELECT 	BOARD_TITLE , BOARD_CRE_DATE , SEQ_NO, CODE_NO, ID
+			FROM EN_BOARD
+				<where>
+			SEQ_NO IN  (SELECT SEQ_NO FROM EN_POINT
+	           			WHERE 
+				                ID = #{id}
+				                <if test='seqNo !=null and !seqNo.equals("")'>
+				                AND SOURCE_SEQ_NO = #{sourceSeqNo} 
+				                </if>
+				                <if test='activity !=null and !activity.equals("")'>
+				                AND ACTIVITY = '202'
+				                </if>
+				                ) 
+			</where>	
+	</select>
+	
+	
+		
+	<select id="retrieveBoardFromSeqNo"
+		parameterType="Map"
+		resultType="Map">
+		SELECT BOARD_TITLE, SEQ_NO
+		  FROM EN_BOARD
+		  <where>
+			  AND SEQ_NO = #{seqNo} 
+		  </where>
+	</select>
+	
+	<select id="retrieveAnsFromSeqNo"
+		parameterType="Map"
+		resultType="Map">
+		SELECT Q_ANS ,SEQ_NO
+		  FROM EN_QUIZ_ANS
+		  <where>
+			  AND SEQ_NO = #{seqNo} 
+			  AND Q_ANS_CODE = '1'
+		  </where>
+	</select>
+	
+	<select id="retrieveBoardAnsFromSeqNo"
+		parameterType="Map"
+		resultType="Map">
+		SELECT EB.BOARD_TITLE, EB.SEQ_NO, EQ.Q_ANS
+		  FROM 
+							  		(SELECT BOARD_TITLE, SEQ_NO 
+							  		   FROM EN_BOARD
+							  		 WHERE SEQ_NO = #{seqNo}
+							  		 ) EB 
+				LEFT OUTER JOIN  
+									(SELECT Q_ANS, SEQ_NO 
+									   FROM EN_QUIZ_ANS
+									  WHERE SEQ_NO = #{seqNo}
+									    AND Q_ANS_CODE = '1'
+									 ) EQ
+		  	ON EB.SEQ_NO = EQ.SEQ_NO
+	</select>
+	
+	<select id="retriveWrongAnsActivity"
+		parameterType="Map"
+		resultType="Map">
+		SELECT 	BOARD_TITLE , BOARD_CRE_DATE , SEQ_NO, CODE_NO
+			FROM EN_BOARD
+			<where>
+			SEQ_NO IN  (SELECT SEQ_NO FROM EN_POINT
+	           			WHERE 
+				                ID = #{id}
+				                AND ACTIVITY = '207') 
+			</where>	
+	</select>
+	
+	
+	<update id="updateBoard"
+		parameterType="Map">
+		UPDATE EN_BOARD
+		   <set>
+				<if test='title !=null and !title.equals("")'>
+					BOARD_TITLE = #{title},
+				</if>
+				<if test='content !=null and !content.equals("")'>
+					BOARD_CONTENT= #{content},
+				</if>
+				<if test='boardGroup !=null and !boardGroup.equals("")'>
+					BOARD_GROUP = #{boardGroup},
+				</if>
+				<if test='boardDepth !=null and !boardDepth.equals("")'>
+					BOARD_DEPTH =#{boardDepth },
+				</if>
+				<if test='boardHit !=null and boardHit.equals("Y")'>
+					<if test='seqNo !=null and !seqNo.equals("")'>
+					BOARD_HIT = (SELECT MAX(BOARD_HIT)+1 FROM EN_BOARD WHERE SEQ_NO = #{seqNo}),
+					</if>
+				</if>
+				<if test='boardModDate !=null and !boardModDate.equals("")'>
+					BOARD_MOD_DATE = SYSDATE(),
+				</if>
+				<if test='isAtch !=null and !isAtch.equals("")'>
+					IS_ATCH_FILE = 'Y',
+				</if>
+				<if test='isDelete !=null and !isDelete.equals("")'>
+					IS_DELETE = 'Y',
+				</if>
+			</set>
+			<where>
+				<if test='seqNo !=null and !seqNo.equals("")'>
+					AND SEQ_NO = #{seqNo}
+				</if>
+			</where>				
+	</update>
+	
+</mapper>

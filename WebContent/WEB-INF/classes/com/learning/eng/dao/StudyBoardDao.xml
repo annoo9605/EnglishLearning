@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.learning.eng.dao.StudyBoardDao">
+
+<!-- 		selectKey IFNULL(MAX(SEQ_NO), 0) + 1 FROM TABLE 을 대신해서 사용가능 -->
+<!-- 	<insert id="insert" parameterType="Map" useGeneratedKeys="true"> -->
+<!-- 	 	<selectKey keyProperty="articleNo" -->
+<!-- 	 		resultType="Integer" order="BEFORE"> -->
+<!-- 	 	</selectKey> -->
+<!--  -->
+<!-- 구글 보드 내용 추가 -->
+	<insert id="googleBoard" parameterType="Map">
+	 	
+	 	INSERT INTO EN_GOOGLE_BOARD
+	 		( SEQ_NO
+	 		, ID
+	 		, STUDY_DATE
+	 		, STUDY_TIME
+	 		, MAX_MEMBER
+	 		, STUDY_PLACE
+	 		, STUDY_SUBJECT
+	 		, STUDY_CONTENT
+	 		, STUDY_LAT
+	 		, STUDY_LNG
+	 		, IS_DELETE )
+	 	 VALUES
+	 		(NULL
+	 		, #{id}
+	 		, #{date}
+	 		, #{time}
+	 		, #{member}
+	 		, #{place}
+	 		, #{subject}
+	 		, #{content}
+	 		, #{lat}
+	 		, #{lng}
+	 		, 'N' )
+	 	
+	 </insert>
+<!-- 스터디 게시판 보드 내용 추가 -->
+	<insert id="insertBoard" parameterType="Map">
+	 	
+	 	INSERT INTO EN_STUDY_BOARD
+	 		( SEQ_NO
+	 		, ID
+	 		, STUDY_DATE
+	 		, STUDY_TIME
+	 		, MAX_MEMBER
+	 		, STUDY_PLACE
+	 		, STUDY_SUBJECT
+	 		, STUDY_CONTENT
+	 		, STUDY_LAT
+	 		, STUDY_LNG
+	 		, IS_DELETE )
+	 	 VALUES
+	 		( NULL
+	 		, #{id}
+	 		, #{date}
+	 		, #{time}
+	 		, #{member}
+	 		, #{place}
+	 		, #{subject}
+	 		, #{content}
+	 		, #{lat}
+	 		, #{lng}
+	 		, 'N' )
+	 	
+	 </insert>
+
+<!-- 스터디 게시판 행정렬 -->
+		<select id="boardList"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_STUDY_BOARD
+			ORDER BY SEQ_NO DESC
+			LIMIT 0, 10
+		
+<!-- 			SELECT * FROM -->
+<!-- 				(SELECT ROWNUM RN, T1.* -->
+<!-- 					FROM 	(SELECT * FROM EN_STUDY_BOARD  -->
+<!-- 								ORDER BY SEQ_NO DESC) T1) -->
+<!-- 				WHERE 1 =1  -->
+<!-- 				<if test="startRow != null"> -->
+<!-- 					AND RN BETWEEN #{startRow} -->
+<!-- 				</if> -->
+<!-- 				<if test="endRow != null" > -->
+<!-- 					 AND #{endRow} -->
+<!-- 				</if>	 -->
+	</select>
+	
+
+		<select id="atchFileDetail"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_ATACH_FILE
+			WHERE 1= 1
+		<if test='seqNo != null'>
+			AND SEQ_NO = #{seqNo}
+		</if>
+		
+	</select>
+	
+<!-- 카운터 수 -->
+		<select id="countArticle"
+		parameterType="Map"
+		resultType="Integer">
+		
+		SELECT COUNT(*)
+			FROM EN_STUDY_BOARD
+			
+	</select>
+	
+<!-- 검색기능? -->
+	<select id="retrieve"
+		parameterType="Map"
+		resultType="Map">
+		
+		  SELECT * FROM EN_STUDY_BOARD
+  			WHERE 1= 1
+  			<if test="seqNo != null">
+	  			AND SEQ_NO = #{seqNo}
+  			</if> 
+	</select>
+<!-- 검색기능? -->
+	<select id="googleretrieve"
+		parameterType="Map"
+		resultType="Map">
+		
+		  SELECT * FROM EN_GOOGLE_BOARD
+  			WHERE 1= 1
+  			<if test="seqNo != null">
+	  			AND SEQ_NO = #{seqNo}
+  			</if> 
+	</select>
+	
+		<select id="commentList"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_COMMENT
+			WHERE 1 = 1
+		<if test="seqNo != null" >
+			AND SOURCE_SEQ_NO = #{seqNo}
+		</if>
+		
+	</select>
+
+<!-- 삭제 -->
+	<update id="delUpdate"
+		parameterType="Map">
+	
+		UPDATE EN_STUDY_BOARD
+		 SET 
+			IS_DELETE = 'Y'
+			 WHERE 1 = 1
+		 <if test='seqNo != null' >
+		 		AND SEQ_NO = #{seqNo}
+		 </if>
+		
+	</update>
+	
+<!-- 달력에 내용 추가 -->
+<select id="retrieveStudy"
+		parameterType="Map"
+		resultType="Map">
+<!-- 		SELECT STUDY_DATE, STUDY_SUBJECT -->
+		SELECT SEQ_NO, STUDY_DATE, STUDY_SUBJECT
+			FROM EN_STUDY_BOARD
+			WHERE 1 =1
+			<if test="id!=null">
+				AND ID = #{id}
+			</if>
+			<if test="STUDY_DATE!=null">
+				AND  STUDY_DATE  = #{STUDY_DATE}
+			</if>
+		
+	</select>
+
+ <!-- 달력 클릭시 내용 상세표시 --> 
+<!-- 	<select id="retrieveMyQuiz" -->
+<!-- 		parameterType="Map" -->
+<!-- 		resultType="Map"> -->
+		
+<!-- 		SELECT EB2.* -->
+<!-- 			FROM (SELECT ROWNUM RN, EB1.*  -->
+<!-- 				  FROM (SELECT EB.*, EP.ACTIVITY, EP.ACTIVITY_DATE -->
+<!-- 							FROM EN_BOARD EB, EN_POINT EP -->
+<!-- 						   WHERE EB.SEQ_NO = EP.SOURCE_SEQ_NO(+) -->
+<!-- 						   ORDER BY SEQ_NO DESC) EB1) EB2 -->
+<!-- 					WHERE 1 = 1 -->
+<!-- 					<if test="id!=null">  -->
+<!-- 						ID = '5' -->
+<!-- 					</if> -->
+<!-- 					<if test="activityDate!=null"> -->
+<!-- 						AND TRUNC(EB2.ACTIVITY_DATE) = #{activityDate} -->
+<!-- 					</if> -->
+<!-- 					<if test="activity!=null"> -->
+<!-- 						AND EB2.ACTIVITY = #{activity} -->
+<!-- 					</if> -->
+<!-- 	</select> -->
+	
+	<select id="searchList"
+		parameterType="Map"
+		resultType="Map">
+	
+		SELECT * FROM EN_STUDY_BOARD
+		  WHERE 1 = 1
+			  AND SEQ_NO LIKE CONCAT ('%' , #{search} , '%')
+			  OR ID LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_DATE LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_TIME LIKE CONCAT ('%' , #{search} , '%')
+			  OR MAX_MEMBER LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_PLACE LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_SUBJECT LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_CONTENT LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_LAT LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_LNG LIKE CONCAT ('%' , #{search} , '%')
+			
+	</select>
+	
+	<select id="searchDetail"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_STUDY_BOARD
+		  WHERE 1 = 1
+			  AND (
+			  SEQ_NO LIKE CONCAT ('%' , #{search} , '%')
+			  OR ID LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_DATE LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_TIME LIKE CONCAT ('%' , #{search} , '%')
+			  OR MAX_MEMBER LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_PLACE LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_SUBJECT LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_CONTENT LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_LAT LIKE CONCAT ('%' , #{search} , '%')
+			  OR STUDY_LNG LIKE CONCAT ('%' , #{search} , '%')
+			  )
+			  
+		<if test="searchType != null" >
+			<if test='searchType == "1"'>
+				AND BOARD_TITLE LIKE CONCAT ('%' , #{searchText} , '%')
+			</if>
+			<if test='searchType == "2"'>
+				AND BOARD_CONTENT LIKE CONCAT ('%' , #{searchText} , '%')
+			</if>
+			<if test='searchType == "3"'>
+				AND BOARD_CRE_DATE  LIKE CONCAT ('%' ,  #{searchDate}  , '%') 
+			</if>
+		</if>
+		
+	</select>
+	
+	
+	
+</mapper>
+

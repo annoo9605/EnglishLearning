@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+<mapper namespace="com.learning.eng.dao.FreeBoardDao">
+
+<!-- 		selectKey IFNULL(MAX(SEQ_NO), 0) + 1 FROM TABLE 을 대신해서 사용가능 -->
+<!-- 	<insert id="insert" parameterType="Map" useGeneratedKeys="true"> -->
+<!-- 	 	<selectKey keyProperty="articleNo" -->
+<!-- 	 		resultType="Integer" order="BEFORE"> -->
+<!-- 	 	</selectKey> -->
+
+	<insert id="insertBoard" parameterType="Map">
+	 	
+	 	INSERT INTO EN_BOARD
+	 		( CODE_NO
+	 		, SEQ_NO
+	 		, ID
+	 		, BOARD_TITLE
+	 		, BOARD_CONTENT
+	 		, BOARD_HIT
+	 		, BOARD_CRE_DATE 
+<!--					08.09 04:22 수정 : 자유게시파만 조회 가능토록 -->
+	 		, IS_DELETE
+<!--					08.09 04:22 수정 : 자유게시파만 조회 가능토록 -->
+	 		)
+	 	 VALUES
+	 		('104'
+	 		, (SELECT IFNULL(MAX(SEQ_NO), 0) + 1 FROM EN_BOARD)
+	 		, #{id}
+	 		, #{title}
+	 		, #{content}
+	 		, 0
+	 		, SYSDATE() 
+<!--					08.09 04:22 수정 : 자유게시파만 조회 가능토록 -->
+	 		, 'N'
+<!--					08.09 04:22 수정 : 자유게시파만 조회 가능토록 -->
+	 		)
+	 	
+	 </insert>
+
+	<select id="boardList"
+		parameterType="Map"
+		resultType="Map">
+		
+			SELECT * FROM
+				(SELECT ROWNUM RN, T1.*
+					FROM 	(SELECT * FROM EN_BOARD 
+<!--					08.09 04:22 수정 : 자유게시파만 조회 가능토록 -->
+								WHERE CODE_NO = '104'
+									AND IS_DELETE='N'
+<!-- 								수정 : 자유게시파만 조회 가능토록 -->
+								ORDER BY SEQ_NO DESC) T1)
+				WHERE 1 =1 
+				<if test="startRow != null">
+					AND RN BETWEEN #{startRow}
+				</if>
+				<if test="endRow != null" >
+					 AND #{endRow} 
+				</if>	
+	</select>
+	
+	<select id="countArticle"
+		parameterType="Map"
+		resultType="Integer">
+		
+		SELECT COUNT(*)
+			FROM EN_BOARD
+<!--					08.09 04:22 수정 : 자유게시파만 조회 가능토록 -->
+			WHERE CODE_NO = '104'
+			  AND IS_DELETE='N'
+<!-- 								수정 : 자유게시파만 조회 가능토록 -->
+			
+	</select>
+	
+	<select id="getLastSeqNo"
+		parameterType="Map"
+		resultType="Integer">
+		
+		SELECT MAX(SEQ_NO)
+ 			FROM EN_BOARD
+		
+	</select>
+	
+	
+	<select id="retrieve"
+		parameterType="Map"
+		resultType="Map">
+		
+		  SELECT * FROM EN_BOARD
+  			WHERE 1= 1
+  			<if test="seqNo != null">
+	  			AND SEQ_NO = #{seqNo}
+  			</if> 
+	</select>
+	
+	<select id="atchFileDetail"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_ATACH_FILE
+			WHERE 1= 1
+		<if test='seqNo != null'>
+			AND SEQ_NO = #{seqNo}
+		</if>
+		
+	</select>
+	
+	<select id="downAtchFile"
+  		parameterType="Map"
+  		resultType="Map">
+  		
+  		SELECT * FROM EN_ATACH_FILE
+  		WHERE 1 = 1
+  		<if test="seqNo!=null">
+  			AND SEQ_NO = #{seqNo}
+  		</if>
+  		<if test="atch_seq_no!=null">
+  			AND FILE_SEQ_NO = #{atch_seq_no}
+  		</if>
+  	</select>
+	
+	<update id="delUpdate"
+		parameterType="Map">
+	
+		UPDATE EN_BOARD
+		 SET 
+			IS_DELETE = 'Y'
+			 WHERE 1 = 1
+		 <if test='seqNo != null' >
+		 		AND SEQ_NO = #{seqNo}
+		 </if>
+		
+	</update>
+	
+	<insert id = "insertComment"
+		parameterType="Map">
+		INSERT INTO EN_COMMENT
+			( ID
+			, COMMENT_CONTENT
+			, COMMENT_CRE_DATE
+			, CODE_NO
+			, SOURCE_SEQ_NO
+			, IS_DELETE )
+		VALUES
+			( #{id}
+			, #{co_content}
+			, SYSDATE()
+			, '104'
+			, #{seqNo}
+			, 'N' )
+	</insert>
+	
+	<select id="commentList"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_COMMENT
+			WHERE 1 = 1
+		<if test="seqNo != null" >
+			AND SOURCE_SEQ_NO = #{seqNo}
+		</if>
+		
+	</select>
+	
+	<select id="searchList"
+		parameterType="Map"
+		resultType="Map">
+	
+		SELECT * FROM EN_BOARD
+		  WHERE 1 = 1
+			  AND SEQ_NO LIKE '%' || #{search} || '%'
+			  OR ID LIKE '%' || #{search} || '%'
+			  OR BOARD_TITLE LIKE '%' || #{search} || '%'
+			  OR BOARD_CONTENT LIKE '%' || #{search} || '%'
+			  OR BOARD_GROUP LIKE '%' || #{search} || '%'
+			  OR BOARD_DEPTH LIKE '%' || #{search} || '%'
+			  OR BOARD_HIT LIKE '%' || #{search} || '%'
+			  OR BOARD_CRE_DATE LIKE '%' || #{search} || '%'
+			  OR BOARD_MOD_DATE LIKE '%' || #{search} || '%'
+			  OR IS_ATCH_FILE LIKE '%' || #{search} || '%'
+			  OR IS_DELETE LIKE '%' || #{search} || '%'
+			
+	</select>
+	
+	<select id="searchDetail"
+		parameterType="Map"
+		resultType="Map">
+		
+		SELECT * FROM EN_BOARD
+		  WHERE 1 = 1
+			  AND (SEQ_NO LIKE '%' || #{search} || '%'
+			  OR ID LIKE '%' || #{search} || '%'
+			  OR BOARD_TITLE LIKE '%' || #{search} || '%'
+			  OR BOARD_CONTENT LIKE '%' || #{search} || '%'
+			  OR BOARD_GROUP LIKE '%' || #{search} || '%'
+			  OR BOARD_DEPTH LIKE '%' || #{search} || '%'
+			  OR BOARD_HIT LIKE '%' || #{search} || '%'
+			  OR BOARD_CRE_DATE LIKE '%' || #{search} || '%'
+			  OR BOARD_MOD_DATE LIKE '%' || #{search} || '%'
+			  OR IS_ATCH_FILE LIKE '%' || #{search} || '%'
+			  OR IS_DELETE LIKE '%' || #{search} || '%')
+			  
+		<if test="searchType != null" >
+			<if test='searchType == "1"'>
+				AND BOARD_TITLE LIKE '%' || #{search} || '%'
+			</if>
+			<if test='searchType == "2"'>
+				AND BOARD_CONTENT LIKE '%' || #{search} || '%'
+			</if>
+			<if test='searchType == "3"'>
+				AND BOARD_CRE_DATE  LIKE '%' || to_date( #{searchDate} ) || '%' 
+			</if>
+		</if>
+		
+	</select>
+	
+	<update id="hit"
+		parameterType="Map">
+	
+		UPDATE EN_BOARD
+		SET BOARD_HIT = IFNULL(BOARD_HIT, 0) + 1
+		WHERE 1 = 1
+		<if test='seqNo!=null'>
+			AND SEQ_NO = #{seqNo}
+		</if>
+		
+	</update>
+	
+	
+</mapper>
+
